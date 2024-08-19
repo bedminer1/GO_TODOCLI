@@ -1,9 +1,9 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
-	"strings"
 
 	todo "github.com/bedminer1/chapter1todo"
 )
@@ -12,27 +12,45 @@ import (
 const todoFileName = ".todo.json"
 
 func main() {
-	l := &todo.List{}
+	task := flag.String("task", "", "Task to be included in the to-do list")
+	list := flag.Bool("list", false, "List all tasks")
+	complete := flag.Int("complete", 0, "Item to bge completed")
 
-	// Use Get method to read from file
+	flag.Parse()
+
+	l := &todo.List{}
 	if err := l.Get(todoFileName); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
-	// Decide what to do based on num of arguments
+	// switch statement based on flags
 	switch {
-	case len(os.Args) == 1:
+	case *list:
 		for _, item := range *l {
-			fmt.Println(item.Task)
+			if !item.Done {
+				fmt.Println(item.Task)
+			}
+		}
+	case *complete > 0:
+		if err := l.Complete(*complete); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
 		}
 
-	default:
-		item := strings.Join(os.Args[1:], " ")
-		l.Add(item)
 		if err := l.Save(todoFileName); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
+	case *task != "":
+		l.Add(*task)
+		if err := l.Save(todoFileName); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+	default:
+		// Invalid flag provided
+		fmt.Fprintln(os.Stderr, "Invalid option")
+		os.Exit(1)
 	}
 }
