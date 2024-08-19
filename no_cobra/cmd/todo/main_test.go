@@ -50,7 +50,7 @@ func TestTodoCLI(t *testing.T) {
 	cmdPath := filepath.Join(dir, binName)
 
 	t.Run("AddNewTask", func(t *testing.T) {
-		cmd := exec.Command(cmdPath, strings.Split(task, " ")...)
+		cmd := exec.Command(cmdPath, strings.Split(task, " ")...) // adds the task
 		if err := cmd.Run(); err != nil {
 			t.Fatal(err)
 		}
@@ -58,7 +58,7 @@ func TestTodoCLI(t *testing.T) {
 
 	t.Run("ListTasks", func(t *testing.T) {
 		cmd := exec.Command(cmdPath)
-		out, err := cmd.CombinedOutput()
+		out, err := cmd.CombinedOutput() // run cmd and get tasks in stdout
 		if err != nil {
 			t.Fatal(err)
 		}
