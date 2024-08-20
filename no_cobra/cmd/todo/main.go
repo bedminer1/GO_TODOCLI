@@ -17,8 +17,8 @@ func main() {
 		fmt.Fprintln(flag.CommandLine.Output(), "Usage information:")
 		flag.PrintDefaults()
 	}
-	
-	task := flag.String("task", "", "Task to be included in the to-do list")
+
+	task := flag.String("add", "", "Task to be included in the to-do list")
 	list := flag.Bool("list", false, "List all tasks")
 	complete := flag.Int("complete", 0, "Item to bge completed")
 
@@ -34,11 +34,7 @@ func main() {
 	// switch statement based on flags
 	switch {
 	case *list:
-		for _, item := range *l {
-			if !item.Done {
-				fmt.Println(item.Task)
-			}
-		}
+		fmt.Print(l)
 	case *complete > 0:
 		if err := l.Complete(*complete); err != nil {
 			fmt.Fprintln(os.Stderr, err)
