@@ -1,1 +1,1 @@
-[{"Task":"Test","Done":true,"CreatedAt":"2024-08-20T12:32:27.960863+08:00","CompletedAt":"2024-08-20T12:32:49.280165+08:00"}]
+[{"Task":"Including item from Args","Done":false,"CreatedAt":"2024-08-20T21:05:33.452468+08:00","CompletedAt":"0001-01-01T00:00:00Z"},{"Task":"This item comes from STDIN","Done":false,"CreatedAt":"2024-08-20T21:06:10.338456+08:00","CompletedAt":"0001-01-01T00:00:00Z"}]
