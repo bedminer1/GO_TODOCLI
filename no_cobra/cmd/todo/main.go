@@ -12,11 +12,18 @@ import (
 const todoFileName = ".todo.json"
 
 func main() {
+	flag.Usage = func() {
+		fmt.Fprintf(flag.CommandLine.Output(), "%s tool. Developed by @bedminer1\n", os.Args[0])	
+		fmt.Fprintln(flag.CommandLine.Output(), "Usage information:")
+		flag.PrintDefaults()
+	}
+	
 	task := flag.String("task", "", "Task to be included in the to-do list")
 	list := flag.Bool("list", false, "List all tasks")
 	complete := flag.Int("complete", 0, "Item to bge completed")
 
 	flag.Parse()
+
 
 	l := &todo.List{}
 	if err := l.Get(todoFileName); err != nil {
