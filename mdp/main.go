@@ -30,6 +30,7 @@ const (
 
 func main() {
 	fileName := flag.String("file", "", "Markdown file to preview")
+	skipPreview := flag.Bool("s", false, "Skip auto-preview")
 	flag.Parse()
 
 	if *fileName == "" {
@@ -37,13 +38,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := run(*fileName, os.Stdout); err != nil {
+	if err := run(*fileName, os.Stdout, *skipPreview); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
-func run(fileName string, out io.Writer) error {
+func run(fileName string, out io.Writer, skipPreview bool) error {
 	// read data from file
 	input, err := os.ReadFile(fileName)
 	if err != nil {
@@ -62,7 +63,15 @@ func run(fileName string, out io.Writer) error {
 	outName := temp.Name()
 	fmt.Fprintln(out, outName)
 
-	return saveHTML(outName, htmlData)
+	if err := saveHTML(outName, htmlData); err != nil {
+		return err
+	}
+
+	if skipPreview {
+		return nil
+	}
+
+	return preview(outName)
 }
 
 // convert Markdown to HTML
@@ -95,7 +104,7 @@ func preview(fname string) error {
 	case "darwin":
 		cName = "open"
 	default:
-		return fmt.Errorf("Os not supported")
+		return fmt.Errorf("os not supported")
 	}
 
 	cParams = append(cParams, fname)
