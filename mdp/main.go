@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"html/template"
 	"time"
 
 	"github.com/microcosm-cc/bluemonday"
@@ -15,23 +16,29 @@ import (
 )
 
 const (
-	header = `<!DOCTYPE html>
+	defaultTemplate = `<!DOCTYPE html>
 <html>
 	<head>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8">
-		<title>Markdown Preview Tool</title>
+		<title>{{ .Title }}</title>
 	</head>
 	<body>
-	`
-	footer = `
+	{{ .Body }}
 	</body>
 </html>
-	`
+`
 )
+
+// content represents HTML content
+type content struct {
+	Title string
+	Body template.HTML
+}
 
 func main() {
 	fileName := flag.String("file", "", "Markdown file to preview")
 	skipPreview := flag.Bool("s", false, "Skip auto-preview")
+	tFname := flag.String("t", "", "Alternate template file")
 	flag.Parse()
 
 	if *fileName == "" {
@@ -39,20 +46,23 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := run(*fileName, os.Stdout, *skipPreview); err != nil {
+	if err := run(*fileName, os.Stdout, *tFname, *skipPreview); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
-func run(fileName string, out io.Writer, skipPreview bool) error {
+func run(fileName string, out io.Writer, tFname string, skipPreview bool) error {
 	// read data from file
 	input, err := os.ReadFile(fileName)
 	if err != nil {
 		return err
 	}
 
-	htmlData := parseContent(input)
+	htmlData, err := parseContent(input, tFname)
+	if err != nil {
+		return err
+	}
 
 	temp, err := os.CreateTemp("", "mdp*.html")
 	if err != nil {
@@ -79,15 +89,29 @@ func run(fileName string, out io.Writer, skipPreview bool) error {
 }
 
 // convert Markdown to HTML
-func parseContent(input []byte) []byte {
+func parseContent(input []byte, tFname string) ([]byte, error) {
 	output := blackfriday.Run(input)
 	body := bluemonday.UGCPolicy().SanitizeBytes(output)
+	t, err := template.New("mdp").Parse(defaultTemplate)
+	if err != nil {
+		return nil, err
+	}
+	if tFname != "" { // check for alternate template files
+		t, err = template.ParseFiles(tFname)
+		if err != nil {
+			return nil, err
+		}
+	}
+	c := content {
+		Title: "Markdown Preview Tool",
+		Body: template.HTML(body),
+	}
 	var buffer bytes.Buffer
-	buffer.WriteString(header)
-	buffer.Write(body)
-	buffer.WriteString(footer)
+	if err := t.Execute(&buffer, c); err != nil {
+		return nil, err
+	}
 
-	return buffer.Bytes()
+	return buffer.Bytes(), nil
 }
 
 // writes htmlData to a file

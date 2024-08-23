@@ -14,7 +14,7 @@ const (
 
 func TestRun(t *testing.T) {
 	var mockStdOut bytes.Buffer
-	if err := run(inputFile, &mockStdOut, false); err != nil {
+	if err := run(inputFile, &mockStdOut, "", false); err != nil {
 		t.Fatal(err)
 	}
 
@@ -34,4 +34,25 @@ func TestRun(t *testing.T) {
 	}
 
 	os.Remove(resultFile)
+}
+
+func TestParseContent(t *testing.T) {
+	input, err := os.ReadFile(inputFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result, err := parseContent(input, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected, err := os.ReadFile(goldenFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !bytes.Equal(expected, result) {
+		t.Error("result content does not match")
+	}
 }
