@@ -14,7 +14,7 @@ const (
 
 func TestRun(t *testing.T) {
 	var mockStdOut bytes.Buffer
-	if err := run(inputFile, &mockStdOut, true); err != nil {
+	if err := run(inputFile, &mockStdOut, false); err != nil {
 		t.Fatal(err)
 	}
 
