@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
+	"runtime"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday/v2"
@@ -78,4 +80,29 @@ func parseContent(input []byte) []byte {
 // writes htmlData to a file
 func saveHTML(outName string, htmlData []byte) error{
 	return os.WriteFile(outName, htmlData, 0644)
+}
+
+// takes temp file and opens in a browser
+func preview(fname string) error {
+	cName := ""
+	cParams := []string{}
+
+	switch runtime.GOOS {
+	case "linux":
+		cName = "xdg-open"
+	case "windows":
+		cName = "cmd.exe"
+	case "darwin":
+		cName = "open"
+	default:
+		return fmt.Errorf("Os not supported")
+	}
+
+	cParams = append(cParams, fname)
+	cPath, err := exec.LookPath(cName)
+	if err != nil {
+		return err
+	}
+
+	return exec.Command(cPath, cParams...).Run()
 }
