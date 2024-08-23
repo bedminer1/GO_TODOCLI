@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday/v2"
@@ -13,12 +12,12 @@ import (
 
 const (
 	header = `<!DOCTYPE html>
-	<html>
-		<head>
-			<meta http-equiv="content-type" content="text/html; charset=utf-8">
-			<title>Markdown Preview Tool</title>
-		</head>
-		<body>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8">
+		<title>Markdown Preview Tool</title>
+	</head>
+	<body>
 	`
 	footer = `
 	</body>
@@ -50,7 +49,14 @@ func run(fileName string) error {
 
 	htmlData := parseContent(input)
 
-	outName := fmt.Sprintf("%s.html", filepath.Base(fileName))
+	temp, err := os.CreateTemp("", "mdp*.html")
+	if err != nil {
+		return err
+	}
+	if err != nil {
+		return err
+	}
+	outName := temp.Name()
 	fmt.Println(outName)
 
 	return saveHTML(outName, htmlData)

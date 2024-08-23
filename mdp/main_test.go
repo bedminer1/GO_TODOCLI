@@ -34,23 +34,18 @@ func compareIgnoringWhitespace(result, golden []byte) bool {
 	ri, gi := 0, 0
 
 	for ri < len(result) && gi < len(golden) {
-		// Skip whitespace in result
+
 		for ri < len(result) && (result[ri] == ' ' || result[ri] == '\n' || result[ri] == '\r' || result[ri] == '\t') {
 			ri++
 		}
-
-		// Skip whitespace in golden
 		for gi < len(golden) && (golden[gi] == ' ' || golden[gi] == '\n' || golden[gi] == '\r' || golden[gi] == '\t') {
 			gi++
 		}
-
 		// Compare non-whitespace characters
 		if ri < len(result) && gi < len(golden) && result[ri] != golden[gi] {
 			fmt.Printf("Mismatch at byte %d:\n result: %d\n golden: %d\n", ri, result[ri], golden[gi])
 			return false
 		}
-
-		// Check if either has reached the end of the input
 		if ri >= len(result) || gi >= len(golden) {
 			break
 		}
