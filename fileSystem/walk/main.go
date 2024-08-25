@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 type config struct {
@@ -35,6 +36,22 @@ func main() {
 	}
 }
 
-func run(root string, out io.Writer, cfg config) error{
-	return nil
+func run(root string, out io.Writer, cfg config) error {
+
+	return filepath.Walk(root,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
+			if filterOut(path, cfg.ext, cfg.size, info) {
+				return nil
+			}
+
+			if cfg.list {
+				return listFile(path, out)
+			}
+
+			return listFile(path, out)
+		})
 }
