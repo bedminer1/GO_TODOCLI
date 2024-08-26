@@ -22,3 +22,12 @@ func listFile(path string, out io.Writer) error {
 	_, err := fmt.Fprintln(out, path)
 	return err
 }
+
+func delFile(path string) error {
+	err := os.Remove(path)
+	if err != nil {
+		return err
+	}
+	fmt.Println("Files deleted successfully")
+	return nil
+}
