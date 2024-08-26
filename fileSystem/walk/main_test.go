@@ -118,7 +118,7 @@ func TestRunDelExtension(t *testing.T) {
 		},
 		{name: "DeleteExtensionMatch",
 		cfg: config{ext: ".log", del: true},
-		extNoDelete: ".log",
+		extNoDelete: "",
 		nDelete: 10,
 		nNoDelete: 0,
 		expected: "",
@@ -134,7 +134,11 @@ func TestRunDelExtension(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func (t *testing.T) {
-			var buffer bytes.Buffer
+			var (
+				buffer bytes.Buffer
+				logBuffer bytes.Buffer
+			)
+			tc.cfg.wLog = &logBuffer
 			tempDir, cleanup := createTempDir(t, map[string]int {
 				tc.cfg.ext: tc.nDelete,
 				tc.extNoDelete: tc.nNoDelete,
@@ -157,6 +161,12 @@ func TestRunDelExtension(t *testing.T) {
 
 			if len(filesLeft) != tc.nNoDelete {
 				t.Errorf("Expted %d files left, got %d instead\n", tc.nNoDelete, len(filesLeft))
+			}
+
+			expLogLines := tc.nDelete + 1
+			lines := bytes.Split(logBuffer.Bytes(), []byte("\n"))
+			if len(lines) != expLogLines {
+				t.Errorf("Expected %d log lines, got %d instead", expLogLines, len(lines))
 			}
 		})
 	}
