@@ -1,0 +1,7 @@
+goos: darwin
+goarch: amd64
+pkg: github.com/bedminer1/performance/colStats
+cpu: Intel(R) Core(TM) i5-8257U CPU @ 1.40GHz
+BenchmarkRun-8   	      10	 551368586 ns/op	534498080 B/op	 5041442 allocs/op
+PASS
+ok  	github.com/bedminer1/performance/colStats	7.092s
