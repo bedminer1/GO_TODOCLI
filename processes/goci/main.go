@@ -46,7 +46,7 @@ func run(proj string, out io.Writer) error {
 		"gofmt",
 		"Gofmt: SUCCESS",
 		proj,
-		[]string{"-1", "."},
+		[]string{"-l", "."},
 	)
 	for _, s := range pipeline {
 		msg, err := s.execute()
