@@ -1,7 +1,6 @@
 package add
 
-func Add(a, b int) int {
-	// switch comments when test
+func add(a, b int) int {
+	// comment out when testing
 	return a + b 
-	// return c
 }
