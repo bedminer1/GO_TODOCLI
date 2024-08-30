@@ -166,6 +166,7 @@ func setupGit(t *testing.T, proj string) func() {
 	}
 }
 
+// Sets up a mock for a command that would typically be run in a specific context (like git push)
 func mockCmdContext(ctx context.Context, exe string, args ...string) *exec.Cmd {
 	cs := []string{"-test.run=TestHelperProcess"}
 	cs = append(cs, exe)
@@ -177,12 +178,14 @@ func mockCmdContext(ctx context.Context, exe string, args ...string) *exec.Cmd {
 	return cmd
 }
 
+// variation of mockCmdContext that simulates a timeout scenario
 func mockCmdTimeout(ctx context.Context, exe string, args ...string) *exec.Cmd {
 	cmd := mockCmdContext(ctx, exe, args...)
 	cmd.Env = append(cmd.Env, "GO_HELPER_TIMEOUT=1")
 	return cmd
 }
 
+// mimics the behavior of the command being tested
 func TestHelperProcess(t *testing.T) {
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
 		return
