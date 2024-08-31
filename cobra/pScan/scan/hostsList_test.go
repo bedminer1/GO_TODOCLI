@@ -2,6 +2,7 @@ package scan_test
 
 import (
 	"errors"
+	"os"
 	"testing"
 
 	"github.com/bedminer1/cobra/pScan/scan"
@@ -114,5 +115,44 @@ func TestRemove(t *testing.T) {
 			}
 
 		})
+	}
+}
+
+func TestSaveLoad(t *testing.T) {
+	hl1 := scan.HostsList{}
+	hl2 := scan.HostsList{}
+	hostName := "host1"
+	hl1.Add(hostName)
+	tf, err := os.CreateTemp("", " ")
+	if err != nil {
+		t.Fatalf("error creating temp file: %q", err)
+	}
+	defer os.Remove(tf.Name())
+	if err := hl1.Save(tf.Name()); err != nil {
+		t.Fatalf("Error saving list to file: %q", err)
+	}
+
+	if err := hl2.Load(tf.Name()); err != nil {
+		t.Fatalf("Error loading list from file: %q", err)
+	}
+
+	if hl1.Hosts[0] != hl2.Hosts[0] {
+		t.Errorf("Expected %q and %q to match", hl1.Hosts[0], hl2.Hosts[0])
+	}
+}
+
+// test if program can handle when file doesn't exist without erroring
+func TestLoadNoFile(t *testing.T) {
+	tf, err := os.CreateTemp("", "")
+	if err != nil {
+		t.Fatalf("error creating temp file: %q", err)
+	}
+	if err := os.Remove(tf.Name()); err != nil {
+		t.Fatalf("error deleting temp file: %q", err)
+	}
+
+	hl := &scan.HostsList{}
+	if err := hl.Load(tf.Name()); err != nil {
+		t.Errorf("expected no error, got %q instead\n", err)
 	}
 }
