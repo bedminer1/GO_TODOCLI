@@ -43,6 +43,7 @@ func Execute() {
 
 func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().StringP("hosts-file", "f", "pScan.hosts", "pScan hosts file")
 
 	// templating for -version info
 	versionTemplate := `{{printf "%s: %s - version %s\n" .Name .Short .Version}}`
