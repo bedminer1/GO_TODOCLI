@@ -23,7 +23,7 @@ var listCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return listAction(os.Stdout, hostsFile)
+		return listAction(os.Stdout, hostsFile, args)
 	},
 }
 
@@ -31,7 +31,7 @@ func init() {
 	hostsCmd.AddCommand(listCmd)
 }
 
-func listAction(out io.Writer, hostsFile string) error {
+func listAction(out io.Writer, hostsFile string, args []string) error {
 	hl := &scan.HostsList{}
 	if err := hl.Load(hostsFile); err != nil {
 		return err

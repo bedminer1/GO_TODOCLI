@@ -54,7 +54,7 @@ func addAction(out io.Writer, hostsFile string, args []string) error {
 		if err := hl.Add(h); err != nil {
 			return err
 		}
-		fmt.Fprintln(out, "Added host: ", h)
+		fmt.Fprintln(out, "Added host:", h)
 	}
 	
 	return hl.Save(hostsFile)
