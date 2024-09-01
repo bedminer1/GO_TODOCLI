@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/bedminer1/cobra/pScan/scan"
@@ -81,5 +83,55 @@ func TestHostActions(t *testing.T) {
 				t.Errorf("expected output: %q, got %q instead", tc.expectedOut, out.String())
 			}
 		})
+	}
+}
+
+func TestIntegration(t *testing.T) {
+	hosts := []string{
+		"host1",
+		"host2",
+		"host3",
+	}
+
+	tf, cleanup := setup(t, hosts, false)
+	defer cleanup()
+
+	delHost := "host2"
+
+	hostsEnd := []string{
+		"host1",
+		"host3",
+	}
+
+	var out bytes.Buffer
+
+	expectedOut := ""
+	for _, v := range hosts {
+		expectedOut += fmt.Sprintf("Added host: %s\n", v)
+	}
+	expectedOut += strings.Join(hosts, "\n")
+	expectedOut += fmt.Sprintln()
+	expectedOut += fmt.Sprintf("Deleted host: %s\n", delHost)
+	expectedOut += strings.Join(hostsEnd, "\n")
+	expectedOut += fmt.Sprintln()
+
+	if err := addAction(&out, tf, hosts); err != nil {
+		t.Fatalf("Unexpected error: %q\n", err)
+	}
+
+	if err := listAction(&out, tf, nil); err != nil {
+		t.Fatalf("Unexpected error: %q\n", err)
+	}
+
+	if err := deleteAction(&out, tf, []string{delHost}); err != nil {
+		t.Fatalf("Unexpected error: %q\n", err)
+	}
+
+	if err := listAction(&out, tf, nil); err != nil {
+		t.Fatalf("Unexpected error: %q\n", err)
+	}
+
+	if out.String() != expectedOut {
+		t.Errorf("expected output %q, got %q\n", expectedOut, out.String())
 	}
 }
