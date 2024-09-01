@@ -13,7 +13,8 @@ import (
 // completionCmd represents the completion command
 var completionCmd = &cobra.Command{
 	Use:   "completion",
-	Short: "Generate bash completion for your command",
+	Short: "Generate zsh completion for your command",
+	Long: `For the tool to show commands available; enter 'source <(./pScan completion)' to use`,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return completionAction(os.Stdout)
