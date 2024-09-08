@@ -45,4 +45,6 @@ func addTask(out io.Writer, tasksFile string, args []string) error {
 		}
 		fmt.Fprintln(out, "Added Task:", t)
 	}
+
+	return tl.Save(tasksFile)
 }
