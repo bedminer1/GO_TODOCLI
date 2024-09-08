@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"sort"
 	"time"
@@ -55,6 +56,18 @@ func (tl *TaskList) Remove(id int) error {
 		return fmt.Errorf("item %d does not exist", id+1)
 	}
 	tl.Tasks = append(tl.Tasks[:id], tl.Tasks[id+1:]...)
+	return nil
+}
+
+func (tl *TaskList) List(out io.Writer) error {
+	for i, t := range tl.Tasks {
+		fmt.Fprintf(out, "%d: %s", i+1, t.Name)
+		if (t.Done) {
+			fmt.Fprintf(out, " - Done\n")
+		} else {
+			fmt.Fprintf(out, " - Not Done\n")
+		}
+	}
 	return nil
 }
 
