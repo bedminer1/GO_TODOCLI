@@ -56,7 +56,7 @@ func todoRouter(todoFile string, l sync.Locker) http.HandlerFunc {
 				replyError(w, r, http.StatusNotFound, err.Error())
 				return
 			}
-			replyError(w, r, http.StatusBadRequest, err.Error())
+			replyError(w, r, http.StatusNotFound, err.Error())
 			return
 		}
 

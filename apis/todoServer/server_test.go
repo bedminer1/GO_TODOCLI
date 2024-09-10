@@ -10,6 +10,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	todo "github.com/bedminer1/chapter1todo"
 )
 
 func setupAPI(t *testing.T) (string, func()) {
@@ -24,7 +26,7 @@ func setupAPI(t *testing.T) (string, func()) {
 
 	for i := 1; i < 3; i++ {
 		var body bytes.Buffer
-		taskName := fmt.Sprintf("Task number %d", i)
+		taskName := fmt.Sprintf("Task number %d.", i)
 		item := struct {
 			Task string `json:"tasK"`
 		}{
@@ -65,6 +67,20 @@ func TestGet(t *testing.T) {
 			expContent: "There's an API here",
 		},
 		{
+			name:       "GetAll",
+			path:       "/todo",
+			expCode:    http.StatusOK,
+			expItems:   2,
+			expContent: "Task number 1.",
+		},
+		{
+			name:       "GetOne",
+			path:       "/todo/1",
+			expCode:    http.StatusOK,
+			expItems:   1,
+			expContent: "Task number 1.",
+		},
+		{
 			name:    "Not Found",
 			path:    "/todo/500",
 			expCode: http.StatusNotFound,
@@ -77,6 +93,11 @@ func TestGet(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			var (
+				resp struct {
+					Results      todo.List `json:"results"`
+					Date         int64     `json:"date"`
+					TotalResults int       `json:"total_results"`
+				}
 				body []byte
 				err  error
 			)
@@ -92,12 +113,22 @@ func TestGet(t *testing.T) {
 			}
 
 			switch {
-			case strings.Contains(r.Header.Get("Content-Type"), "text/plain"): 
+			case strings.Contains(r.Header.Get("Content-Type"), "text/plain"):
 				if body, err = io.ReadAll(r.Body); err != nil {
 					t.Error(err)
 				}
 				if !strings.Contains(string(body), tc.expContent) {
 					t.Errorf("expected %q, got %q", tc.expContent, string(body))
+				}
+			case r.Header.Get("Content-Type") == "application/json":
+				if err = json.NewDecoder(r.Body).Decode(&resp); err != nil {
+					t.Error(err)
+				}
+				if resp.TotalResults != tc.expItems {
+					t.Errorf("expected %d items, got %d", tc.expItems, resp.TotalResults)
+				}
+				if resp.Results[0].Task != tc.expContent {
+					t.Errorf("expected %q, got %q", tc.expContent, resp.Results[0].Task)
 				}
 			default:
 				t.Fatalf("Unsupported Content-Type")
