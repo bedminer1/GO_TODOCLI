@@ -165,7 +165,7 @@ func TestAdd(t *testing.T) {
 	})
 
 	t.Run("CheckAdd", func(t *testing.T) {
-		r, err := http.Get(url+"/todo/3")
+		r, err := http.Get(url + "/todo/3")
 		if err != nil {
 			t.Error(err)
 		}
@@ -230,6 +230,56 @@ func TestDelete(t *testing.T) {
 		expTask := "Task number 2."
 		if resp.Results[0].Task != expTask {
 			t.Error("task does not match")
+		}
+	})
+}
+
+func TestComplete(t *testing.T) {
+	url, cleanup := setupAPI(t)
+	defer cleanup()
+
+	t.Run("Complete", func(t *testing.T) {
+		u := fmt.Sprintf("%s/todo/1?complete", url)
+		req, err := http.NewRequest(http.MethodPatch, u, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		r, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if r.StatusCode != http.StatusNoContent {
+			t.Fatal("expected status no content")
+		}
+	})
+
+	t.Run("CheckComplete", func(t *testing.T) {
+		r, err := http.Get(url + "/todo")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if r.StatusCode != http.StatusOK {
+			t.Fatal("expected status ok")
+		}
+
+		var resp todoResponse
+		if err := json.NewDecoder(r.Body).Decode(&resp); err != nil {
+			t.Fatal(err)
+		}
+		r.Body.Close()
+
+		if len(resp.Results) != 2 {
+			t.Error("expected 2 items")
+		}
+
+		if !resp.Results[0].Done {
+			t.Error("expected item 1 to be completed")
+		}
+		if resp.Results[1].Done {
+			t.Error("expected item 2 to not be completed")
 		}
 	})
 }
