@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -282,4 +283,9 @@ func TestComplete(t *testing.T) {
 			t.Error("expected item 2 to not be completed")
 		}
 	})
+}
+
+func TestMain(m *testing.M) { // discard logs from server when testing
+	log.SetOutput(io.Discard)
+	os.Exit(m.Run())
 }
