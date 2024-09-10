@@ -185,3 +185,51 @@ func TestAdd(t *testing.T) {
 		}
 	})
 }
+
+func TestDelete(t *testing.T) {
+	url, cleanup := setupAPI(t)
+	defer cleanup()
+
+	t.Run("Delete", func(t *testing.T) {
+		u := fmt.Sprintf("%s/todo/1", url)
+		req, err := http.NewRequest(http.MethodDelete, u, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		r, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if r.StatusCode != http.StatusNoContent {
+			t.Fatal("expected status no content")
+		}
+	})
+
+	t.Run("CheckDelete", func(t *testing.T) {
+		r, err := http.Get(url + "/todo")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if r.StatusCode != http.StatusOK {
+			t.Fatal("expected status ok")
+		}
+
+		var resp todoResponse
+		if err := json.NewDecoder(r.Body).Decode(&resp); err != nil {
+			t.Fatal(err)
+		}
+		r.Body.Close()
+
+		if len(resp.Results) != 1 {
+			t.Error("expected 1 item")
+		}
+
+		expTask := "Task number 2."
+		if resp.Results[0].Task != expTask {
+			t.Error("task does not match")
+		}
+	})
+}
