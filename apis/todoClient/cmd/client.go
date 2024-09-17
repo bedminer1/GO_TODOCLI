@@ -10,11 +10,11 @@ import (
 )
 
 var (
-	ErrConnection      = errors.New("Connection error")
-	ErrNotFound        = errors.New("Not found")
-	ErrInvalidResponse = errors.New("Invalid server response")
-	ErrInvalid         = errors.New("Invalid data")
-	ErrNotNumber       = errors.New("Not a number")
+	ErrConnection      = errors.New("connection error")
+	ErrNotFound        = errors.New("not found")
+	ErrInvalidResponse = errors.New("invalid server response")
+	ErrInvalid         = errors.New("invalid data")
+	ErrNotNumber       = errors.New("not a number")
 )
 
 type item struct {
@@ -29,6 +29,8 @@ type response struct {
 	Date         int    `json:"date"`
 	TotalResults int    `json:"total_results"`
 }
+
+const timeFormat = "Jan/02 @15:04"
 
 func newClient() *http.Client {
 	c := &http.Client{
@@ -75,4 +77,19 @@ func getAll(apiRoot string) ([]item, error) {
 	u := fmt.Sprintf("%s/todo", apiRoot)
 
 	return getItems(u)
+}
+
+func getOne(apiRoot string, id int) (item, error) {
+	u := fmt.Sprintf("%s/todo/%d", apiRoot, id)
+
+	items, err := getItems(u)
+	if err != nil {
+		return item{}, err
+	}
+
+	if len(items) != 1 {
+		return item{}, fmt.Errorf("%w: Invalid results", ErrInvalid)
+	}
+
+	return items[0], nil
 }
