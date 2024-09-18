@@ -43,7 +43,7 @@ func init() {
 func viewAction(out io.Writer, apiRoot string, arg string) error {
 	id, err := strconv.Atoi(arg)
 	if err != nil {
-		return fmt.Errorf("item id must be number")
+		return fmt.Errorf("%w: item id must be number", ErrNotNumber)
 	}
 
 	i, err := getOne(apiRoot, id)
