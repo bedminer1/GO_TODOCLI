@@ -183,3 +183,39 @@ func TestAddAction(t *testing.T) {
 		t.Error("Unexpected output")
 	}
 }
+
+func TestCompleteAction(t *testing.T) {
+	expURLPath := "/todo/1"
+	expMethod := http.MethodPatch
+	expQuery := "complete"
+	expOut := "Item number 1 marked as completed\n"
+	arg := "1"
+
+	url, cleanup := mockServer(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != expURLPath {
+			t.Error("unexpected path")
+		}
+
+		if r.Method != expMethod {
+			t.Error("unexpected method")
+		}
+
+		if _, ok := r.URL.Query()[expQuery]; !ok {
+			t.Error("expected query 'complete'")
+		}
+
+		w.WriteHeader(testResp["noContent"].Status)
+		fmt.Fprintln(w, testResp["noContent"].Body)
+	})
+	defer cleanup()
+
+	var out bytes.Buffer
+
+	if err := completeAction(&out, url, arg); err != nil {
+		t.Fatal("unexpected error")
+	}
+
+	if expOut != out.String() {
+		t.Errorf("unexpected output: %q\n expected: %q", out.String(), expOut)
+	}
+}
