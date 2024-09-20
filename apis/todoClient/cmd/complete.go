@@ -43,7 +43,7 @@ func init() {
 func completeAction(out io.Writer, apiRoot, arg string) error {
 	id, err := strconv.Atoi(arg)
 	if err != nil {
-		return err
+		return fmt.Errorf("%w: id not a number", ErrNotNumber)
 	}
 
 	if err := completeItem(apiRoot, id); err != nil {
