@@ -1,6 +1,7 @@
 package pomodoro
 
 import (
+	"context"
 	"errors"
 	"time"
 )
@@ -27,7 +28,7 @@ type Interval struct {
 	StartTime       time.Time
 	PlannedDuration time.Duration
 	ActualDuration  time.Duration
-	Categroy        string
+	Category        string
 	State           int
 }
 
@@ -75,4 +76,90 @@ func NewConfig(repo Repository, pomodoro, shortBreak, longBreak time.Duration) *
 	}
 
 	return c
+}
+
+// takes a reference to a repository and returns the category of the next interval
+func nextCategory(r Repository) (string, error) {
+	li, err := r.Last() 
+	if err != nil && err == ErrNoIntervals {
+		return CategoryPomodoro, nil
+	}
+
+	if err != nil {
+		return "", err
+	}
+
+	if li.Category == CategoryLongBreak || li.Category == CategoryShortBreak {
+		return CategoryPomodoro, nil
+	}
+
+	lastBreaks, err := r.Breaks(3)
+	if err != nil {
+		return "", err
+	}
+
+	if len(lastBreaks) < 3 {
+		return CategoryShortBreak, nil
+	}
+
+	for _, i := range lastBreaks {
+		if i.Category == CategoryLongBreak {
+			return CategoryShortBreak, nil
+		}
+	}
+
+	return CategoryLongBreak, nil
+}
+
+type Callback func(Interval)
+
+// tick controls the timer for each interval's execution
+func tick(ctx context.Context, id int64, config *IntervalConfig, start, periodic, end Callback) error {
+	// use the time.Ticker type and loop to execute actions every second
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+
+	i, err := config.repo.ByID(id)
+	if err != nil {
+		return err
+	}
+
+	expire := time.After(i.PlannedDuration - i.ActualDuration)
+	start(i)
+
+	for {
+		select {
+		case <-ticker.C: 
+			i, err := config.repo.ByID(id)
+			if err != nil {
+				return err
+			}
+			if i.State == StatePaused {
+				return nil
+			}
+			i.ActualDuration += time.Second
+			if err := config.repo.Update(i); err != nil {
+				return err
+			}
+
+			periodic(i)
+
+		case <-expire:
+			i, err := config.repo.ByID(id)
+			if err != nil {
+				return err
+			}
+			i.State = StateDone
+			end(i)
+			return config.repo.Update(i)
+
+		case <-ctx.Done():
+			i, err := config.repo.ByID(id)
+			if err != nil {
+				return err
+			}
+			i.State = StateCancelled
+			return config.repo.Update(i)
+		}
+	}
 }
