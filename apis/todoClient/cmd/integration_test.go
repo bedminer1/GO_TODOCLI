@@ -1,3 +1,5 @@
+// +build integration
+
 package cmd
 
 import (
@@ -8,7 +10,6 @@ import (
 	"os"
 	"strings"
 	"testing"
-	"text/scanner"
 	"time"
 )
 
@@ -104,6 +105,67 @@ func TestIntegration(t *testing.T) {
 	}
 
 	t.Run("CompleteTask", func(t *testing.T) {
-		
+		var out bytes.Buffer
+		if err := completeAction(&out, apiRoot, taskId); err != nil {
+			t.Fatalf("Unexpected error: %q", err)
+		}
+
+		expOut := fmt.Sprintf("Item number %s marked as completed\n", taskId)
+		if expOut != out.String() {
+			t.Fatal("Unexpected output")
+		}
+	})
+
+	t.Run("ListCompletedTask", func(t *testing.T) {
+		var out bytes.Buffer
+		if err := listAction(&out, apiRoot); err != nil {
+			t.Fatalf("Unexpected error: %q", err)
+		}
+
+		outList := ""
+		scanner := bufio.NewScanner(&out)
+		for scanner.Scan() {
+			if strings.Contains(scanner.Text(), task) {
+				outList = scanner.Text()
+				break
+			}
+		}
+
+		if outList == "" {
+			t.Error("Task not in list")
+		}
+
+		taskCompleteStatus := strings.Fields(outList)[0]
+
+		if taskCompleteStatus != "X" {
+			t.Error("Expected task to be completed")
+		}
+	})
+
+	t.Run("DeleteTask", func(t *testing.T) {
+		var out bytes.Buffer
+		if err := deleteAction(&out, apiRoot, taskId); err != nil {
+			t.Fatalf("Unexpected error: %q", err)
+		}
+
+		expOut := fmt.Sprintf("Item number %s deleted\n", taskId)
+		if expOut != out.String() {
+			t.Fatalf("Expected output: %q\n Output: %q", expOut, out.String())
+		}
+	})
+
+	t.Run("ListDeletedTask", func(t *testing.T) {
+		var out bytes.Buffer
+		if err := listAction(&out, apiRoot); err != nil {
+			t.Fatalf("Unexpected error: %q", err)
+		}
+
+		scanner := bufio.NewScanner(&out)
+		for scanner.Scan() {
+			if strings.Contains(scanner.Text(), task) {
+				t.Errorf("Task %q still in the list", task)
+				break
+			}
+		}
 	})
 }

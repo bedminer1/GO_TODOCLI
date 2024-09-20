@@ -1,3 +1,5 @@
+// +build !integration
+
 package cmd
 
 import (
@@ -91,19 +93,19 @@ func TestViewAction(t *testing.T) {
 			expError: nil,
 			expOut:   "Task:         Task 1\nCreated at:   Oct/28 @08:28\nCompleted:    No\n",
 			resp:     testResp["resultsOne"],
-			id: "1",
+			id:       "1",
 		},
 		{
 			name:     "NotFound",
 			expError: ErrNotFound,
 			resp:     testResp["notFound"],
-			id: "1",
+			id:       "1",
 		},
 		{
-			name:        "InvalidID",
-			expError:    ErrNotNumber,
-			resp:        testResp["noResults"],
-			id: "a",
+			name:     "InvalidID",
+			expError: ErrNotNumber,
+			resp:     testResp["noResults"],
+			id:       "a",
 		},
 	}
 
