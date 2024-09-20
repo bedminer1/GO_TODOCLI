@@ -219,3 +219,34 @@ func TestCompleteAction(t *testing.T) {
 		t.Errorf("unexpected output: %q\n expected: %q", out.String(), expOut)
 	}
 }
+
+func TestDelAction(t *testing.T) {
+	expURLPath := "/todo/1"
+	expMethod := http.MethodDelete
+	expOut := "Item number 1 deleted\n"
+	arg := "1"
+
+	url, cleanup := mockServer(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != expURLPath {
+			t.Error("unexpected path")
+		}
+
+		if r.Method != expMethod {
+			t.Error("unexpected method")
+		}
+
+		w.WriteHeader(testResp["noContent"].Status)
+		fmt.Fprintln(w, testResp["noContent"].Body)
+	})
+	defer cleanup()
+
+	var out bytes.Buffer
+
+	if err := deleteAction(&out, url, arg); err != nil {
+		t.Fatal("unexpected error")
+	}
+
+	if expOut != out.String() {
+		t.Errorf("unexpected output: %q\n expected: %q", out.String(), expOut)
+	}
+}
