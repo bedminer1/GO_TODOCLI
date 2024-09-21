@@ -66,3 +66,22 @@ func (r *inMemoryRepo) Last() (pomodoro.Interval, error) {
 
 	return r.intervals[len(r.intervals)-1], nil
 }
+
+func (r *inMemoryRepo) Breaks(n int) ([]pomodoro.Interval, error) {
+	r.RLock()
+	defer r.RUnlock()
+
+	data := []pomodoro.Interval{}
+	for k := len(r.intervals)-1; k>=0; k-- {
+		if r.intervals[k].Category == pomodoro.CategoryPomodoro {
+			continue
+		}
+
+		data = append(data, r.intervals[k])
+		if len(data) == n {
+			return data, nil
+		}
+	}
+
+	return data, nil
+}
