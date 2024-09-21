@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"time"
-
-	"golang.org/x/text/cases"
 )
 
 // Category constants
