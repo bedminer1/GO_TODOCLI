@@ -1,6 +1,8 @@
 package pomodoro_test
 
 import (
+	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -69,3 +71,64 @@ func TestNewConfig(t *testing.T) {
 		})
 	}
 }
+
+func TestGetInterval(t *testing.T) {
+	repo, cleanup := getRepo(t)
+	defer cleanup()
+
+	// complete an interval to allow GetInterval to get the next interval
+	const duration = 1 * time.Millisecond
+	config := pomodoro.NewConfig(repo, 3*duration, duration, 2*duration)
+	for i := 1; i <= 16; i++ {
+		var (
+			expCategory string
+			expDuration time.Duration
+		)
+
+		switch {
+		case i % 2 != 0:
+			expCategory = pomodoro.CategoryPomodoro
+			expDuration = 3 * duration
+		case i % 8 == 0:
+			expCategory = pomodoro.CategoryLongBreak
+			expDuration = 2 * duration
+		case i % 2 == 0:
+			expCategory = pomodoro.CategoryShortBreak
+			expDuration = duration
+		}
+
+		testName := fmt.Sprintf("%s%d", expCategory, i)
+		t.Run(testName, func(t *testing.T) {
+			res, err := pomodoro.GetInterval(config)
+			if err != nil {
+				t.Errorf("Unexpected error: %q", err)
+			}
+
+			noop := func(pomodoro.Interval){}
+			if err := res.Start(context.Background(), config, noop, noop, noop); err != nil {
+				t.Fatal(err)
+			}
+
+			if res.Category != expCategory {
+				t.Errorf("Unexpected category: %q\n", res.Category)
+			}
+
+			if res.PlannedDuration != expDuration {
+				t.Error("Unexpected duration")
+			}
+
+			if res.State != pomodoro.StateNotStarted {
+				t.Error("Unexpected state")
+			}
+
+			ui, err := repo.ByID(res.ID)
+			if err != nil {
+				t.Errorf("Unexpected error: %q\n", err)
+			}
+
+			if ui.State != pomodoro.StateDone {
+				t.Error("Unexpected state")
+			}
+		})
+	}
+}>>
