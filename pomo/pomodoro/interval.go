@@ -3,7 +3,10 @@ package pomodoro
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
+
+	"golang.org/x/text/cases"
 )
 
 // Category constants
@@ -185,4 +188,46 @@ func newInterval(config *IntervalConfig) (Interval, error) {
 	}
 
 	return i, nil
+}
+
+func GetInterval(config *IntervalConfig) (Interval, error) {
+	i, err := config.repo.Last()
+	if err != nil && err != ErrNoIntervals {
+		return i, err
+	}
+
+	if err == nil && i.State != StateCancelled && i.State != StateDone {
+		return i, nil
+	}
+
+	return newInterval(config)
+}
+
+func (i Interval) Start(ctx context.Context, config *IntervalConfig, start, periodic, end Callback) error {
+	switch i.State {
+	case StateRunning:
+		return nil
+	case StateNotStarted:
+		i.StartTime = time.Now()
+		fallthrough // go to next case block
+	case StatePaused:
+		i.State = StateRunning
+		if err := config.repo.Update(i); err != nil {
+			return err
+		}
+		return tick(ctx, i.ID, config, start, periodic, end)
+	case StateCancelled, StateDone:
+		return fmt.Errorf("%w: cannot start", ErrIntervalCompleted)
+	default:
+		return fmt.Errorf("%w: %d", ErrInvalidState, i.State)
+	}
+} 
+
+func (i Interval) Pause(config *IntervalConfig) error {
+	if i.State != StateRunning {
+		return ErrIntervalNotRunning
+	}
+
+	i.State = StatePaused
+	return config.repo.Update(i)
 }
