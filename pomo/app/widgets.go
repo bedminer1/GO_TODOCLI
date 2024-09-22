@@ -9,6 +9,7 @@ import (
 	"github.com/mum4k/termdash/widgets/text"
 )
 
+// widgets can be thought of as components for terminal guis
 type widgets struct {
 	donTimer       *donut.Donut
 	disType        *segmentdisplay.SegmentDisplay
