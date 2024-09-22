@@ -122,3 +122,27 @@ func newDonut(ctx context.Context, donUpdater <- chan []int, errorCh chan<- erro
 
 	return don, nil
 }
+
+func newSegmentDisplay(ctx context.Context, updateText <-chan string, errorCh chan<- error) (*segmentdisplay.SegmentDisplay, error) {
+	sd, err := segmentdisplay.New()
+	if err != nil {
+		return nil, err
+	}
+
+	go func() {
+		for {
+			select {
+			case t := <-updateText:
+				if t == "" {
+					t = " "
+				}
+
+				errorCh <- sd.Write([]*segmentdisplay.TextChunk{segmentdisplay.NewChunk(t)})
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+
+	return sd, nil
+}
