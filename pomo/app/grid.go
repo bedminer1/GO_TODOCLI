@@ -13,7 +13,7 @@ func newGrid(b *buttonSet, w *widgets, t terminalapi.Terminal) (*container.Conta
 
 	// first row
 	builder.Add(
-		grid.RowHeightPerc(50,
+		grid.RowHeightPerc(80,
 			grid.ColWidthPercWithOpts(30,
 				[]container.Option{
 					container.Border(linestyle.Light),
@@ -55,11 +55,6 @@ func newGrid(b *buttonSet, w *widgets, t terminalapi.Terminal) (*container.Conta
 				grid.Widget(b.btPause),
 			),
 		),
-	)
-
-	// third row
-	builder.Add(
-		grid.RowHeightPerc(30),
 	)
 
 	gridOpts, err := builder.Build()

@@ -95,10 +95,9 @@ func newText(ctx context.Context, updateText <-chan string, errorCh chan<- error
 	return txt, nil
 }
 
-
-func newDonut(ctx context.Context, donUpdater <- chan []int, errorCh chan<- error) (*donut.Donut, error) {
-// Donut displays the progress of an operation by filling
-// a partial circle, eventually by completing a full circle
+func newDonut(ctx context.Context, donUpdater <-chan []int, errorCh chan<- error) (*donut.Donut, error) {
+	// Donut displays the progress of an operation by filling
+	// a partial circle, eventually by completing a full circle
 	don, err := donut.New(
 		donut.Clockwise(),
 		donut.CellOpts(cell.FgColor(cell.ColorNavy)),
@@ -130,6 +129,8 @@ func newSegmentDisplay(ctx context.Context, updateText <-chan string, errorCh ch
 		return nil, err
 	}
 
+	// Set custom cell dimensions for better rendering
+
 	go func() {
 		for {
 			select {
@@ -138,8 +139,10 @@ func newSegmentDisplay(ctx context.Context, updateText <-chan string, errorCh ch
 					t = " "
 				}
 
-		// pass text segments to the display, in this case its a single segment
-				errorCh <- sd.Write([]*segmentdisplay.TextChunk{segmentdisplay.NewChunk(t)})
+				// pass text segments to the display, in this case its a single segment
+				errorCh <- sd.Write([]*segmentdisplay.TextChunk{
+					segmentdisplay.NewChunk(t, segmentdisplay.WriteCellOpts(cell.FgColor(cell.ColorNumber(33)))),
+				})
 			case <-ctx.Done():
 				return
 			}
