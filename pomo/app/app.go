@@ -3,11 +3,13 @@ package app
 import (
 	"context"
 	"image"
+	"time"
 
 	"github.com/bedminer1/pomo/pomodoro"
 	"github.com/mum4k/termdash"
 	"github.com/mum4k/termdash/terminal/tcell"
 	"github.com/mum4k/termdash/terminal/terminalapi"
+	"golang.org/x/text/cases"
 )
 
 type App struct {
@@ -62,4 +64,45 @@ func New(config *pomodoro.IntervalConfig) (*App, error) {
 		errorCh: errorCh,
 		term: term,
 	}, nil
+}
+
+func (a *App) resize() error {
+	if a.size.Eq(a.term.Size()) {
+		return nil
+	}
+
+	a.size = a.term.Size()
+	if err := a.term.Clear(); err != nil {
+		return err
+	}
+
+	return a.controller.Redraw()
+}
+
+func (a *App) Run() error {
+	// clean up when done
+	defer a.term.Close()
+	defer a.controller.Close()
+
+	ticker := time.NewTicker(2 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-a.redrawCh:
+			if err := a.controller.Redraw(); err != nil {
+				return err
+			}
+		case err := <-a.errorCh:
+			if err != nil {
+				return err
+			}
+		case <-a.ctx.Done():
+			return nil
+		case <-ticker.C:
+			if err := a.resize(); err != nil {
+				return err
+			}
+		}
+	}
 }
