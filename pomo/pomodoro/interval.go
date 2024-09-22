@@ -9,7 +9,7 @@ import (
 
 // Category constants
 const (
-	CategoryPomodoro   = "Pomodoro"
+	CategoryPomodoro   = "Work"
 	CategoryShortBreak = "ShortBreak"
 	CategoryLongBreak  = "LongBreak"
 )

@@ -10,27 +10,44 @@ import (
 
 func newGrid(b *buttonSet, w *widgets, t terminalapi.Terminal) (*container.Container, error) {
 	builder := grid.New()
-	builder.Add(grid.RowHeightPerc(30, 
-		grid.ColWidthPercWithOpts(30, []container.Option{
-			container.Border(linestyle.Light),
-			container.BorderTitle("Press Q to Quit"),
-		},
-			grid.RowHeightPerc(80, grid.Widget(w.donTimer)),
-			grid.RowHeightPercWithOpts(20,
+
+	// first row
+	builder.Add(
+		grid.RowHeightPerc(50,
+			grid.ColWidthPercWithOpts(30,
 				[]container.Option{
-					container.AlignHorizontal(align.HorizontalCenter),
+					container.Border(linestyle.Light),
+					container.BorderTitle("press Q to quit"),
 				},
-				grid.Widget(w.txtTimer,
-				container.AlignHorizontal(align.HorizontalCenter),
-				container.AlignVertical(align.VerticalMiddle),
-				container.PaddingLeftPercent(49),
+
+				grid.RowHeightPerc(80,
+					grid.Widget(w.donTimer)),
+				grid.RowHeightPercWithOpts(20,
+					[]container.Option{
+						container.AlignHorizontal(align.HorizontalCenter),
+					},
+					grid.Widget(w.txtTimer,
+						container.AlignHorizontal(align.HorizontalCenter),
+						container.AlignVertical(align.VerticalMiddle),
+						container.PaddingLeftPercent(49),
+					),
+				),
+			),
+
+			grid.ColWidthPerc(70,
+				grid.RowHeightPerc(80,
+					grid.Widget(w.disType, container.Border(linestyle.Light)),
+				),
+				grid.RowHeightPerc(20,
+					grid.Widget(w.txtInfo, container.Border(linestyle.Light)),
 				),
 			),
 		),
-	))
+	)
 
+	// second row
 	builder.Add(
-		grid.RowHeightPerc(10,
+		grid.RowHeightPerc(20,
 			grid.ColWidthPerc(50,
 				grid.Widget(b.btStart),
 			),
@@ -40,8 +57,9 @@ func newGrid(b *buttonSet, w *widgets, t terminalapi.Terminal) (*container.Conta
 		),
 	)
 
+	// third row
 	builder.Add(
-		grid.RowHeightPerc(60),
+		grid.RowHeightPerc(30),
 	)
 
 	gridOpts, err := builder.Build()

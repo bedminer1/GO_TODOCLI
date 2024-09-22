@@ -9,7 +9,6 @@ import (
 	"github.com/mum4k/termdash"
 	"github.com/mum4k/termdash/terminal/tcell"
 	"github.com/mum4k/termdash/terminal/terminalapi"
-	"golang.org/x/text/cases"
 )
 
 type App struct {
