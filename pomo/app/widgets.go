@@ -137,6 +137,7 @@ func newSegmentDisplay(ctx context.Context, updateText <-chan string, errorCh ch
 					t = " "
 				}
 
+		// pass text segments to the display, in this case its a single segment
 				errorCh <- sd.Write([]*segmentdisplay.TextChunk{segmentdisplay.NewChunk(t)})
 			case <-ctx.Done():
 				return
