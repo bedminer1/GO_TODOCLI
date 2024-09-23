@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/bedminer1/pomo/pomodoro"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -49,4 +50,30 @@ func NewSQLite3Repo(dbfile string) (*dbRepo, error) {
 	return &dbRepo{
 		db: db,
 	}, nil
+}
+
+func (r *dbRepo) Create(i pomodoro.Interval) (int64, error) {
+	r.Lock()
+	defer r.Unlock()
+
+	// prepare INSERT statement
+	insStmt, err := r.db.Prepare("INSERT INTO interval VALUES(NULL, ?,?,?,?,?)")
+	if err != nil {
+		return 0, err
+	}
+	defer insStmt.Close()
+
+	// Exec INSERT statement
+	res, err := insStmt.Exec(i.StartTime, i.PlannedDuration, i.ActualDuration, i.Category, i.State)
+	if err != nil {
+		return 0, err
+	}
+
+	// INSERT res
+	var id int64
+	if id, err = res.LastInsertId(); err != nil {
+		return 0, err
+	}
+
+	return id, nil
 }
