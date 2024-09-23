@@ -111,3 +111,72 @@ func (r *dbRepo) ByID(id int64) (pomodoro.Interval, error) {
 	err := row.Scan(&i.ID, &i.StartTime, &i.PlannedDuration, &i.ActualDuration, &i.Category, &i.State)
 	return i, err
 }
+
+func (r *dbRepo) Last() (pomodoro.Interval, error) {
+	r.RLock()
+	defer r.RUnlock()
+
+	last := pomodoro.Interval{}
+	err := r.db.QueryRow("SELECT * FROM interval ORDER BY id desc LIMIT 1").Scan(
+		&last.ID,
+		&last.StartTime,
+		&last.PlannedDuration,
+		&last.ActualDuration,
+		&last.Category,
+		&last.State,
+	)
+	if err == sql.ErrNoRows {
+		return last, pomodoro.ErrNoIntervals
+	}
+
+	if err != nil {
+		return last, err
+	}
+
+	return last, nil
+}
+
+func (r *dbRepo) Breaks(n int) ([]pomodoro.Interval, error) {
+	r.RLock()
+	defer r.RUnlock()
+
+	stmt := `SELECT * FROM interval WHERE category LIKE '%Break' ORDER BY id DESC LIMIT ?`
+
+	rows, err := r.db.Query(stmt, n)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	data := []pomodoro.Interval{}
+	for rows.Next() {
+		i := pomodoro.Interval{}
+		err = rows.Scan(&i.ID, &i.StartTime, &i.PlannedDuration, &i.ActualDuration, &i.Category, &i.State)
+		if err != nil {
+			return nil, err
+		}
+
+		data = append(data, i)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func (r *dbRepo) CategorySummary(day time.Time, filter string) (time.Duration, error) {
+	r.RLock()
+	defer r.RUnlock()
+
+	stmt := `SELECT sum(actual_duration) FROM interval WHERE category LIKE ? AND strftime('%Y-%m-%d', start_time, 'localtime')=strftime('%Y-%m-%d', ?, 'localtime')`
+	var ds sql.NullInt64
+	err := r.db.QueryRow(stmt, filter, day).Scan(&ds)
+	var d time.Duration
+	if ds.Valid {
+		d = time.Duration(ds.Int64)
+	}
+
+	return d, err
+}
