@@ -77,3 +77,22 @@ func (r *dbRepo) Create(i pomodoro.Interval) (int64, error) {
 
 	return id, nil
 }
+
+func (r *dbRepo) Update(i pomodoro.Interval) error {
+	r.Lock()
+	defer r.Unlock()
+
+	updStmt, err := r.db.Prepare("UPDATE interval SET start_time=?, actual_duration=?, state=? WHERE id=?")
+	if err != nil {
+		return err
+	}
+	defer updStmt.Close()
+
+	res, err := updStmt.Exec(i.StartTime, i.ActualDuration, i.State, i.ID)
+	if err != nil {
+		return err
+	}
+
+	_, err = res.RowsAffected()
+	return err
+}
