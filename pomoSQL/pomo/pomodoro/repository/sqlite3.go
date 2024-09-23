@@ -96,3 +96,18 @@ func (r *dbRepo) Update(i pomodoro.Interval) error {
 	_, err = res.RowsAffected()
 	return err
 }
+
+func (r *dbRepo) ByID(id int64) (pomodoro.Interval, error) {
+	r.RLock()
+	defer r.RUnlock()
+
+	// query db row based on id
+	row := r.db.QueryRow("SELECT * FROM interval WHERE id=?", id)
+
+	// parse db row into interval struct
+	i := pomodoro.Interval{}
+	// converts from db types to go types automatically
+	// eg DATETIME -> time.Time
+	err := row.Scan(&i.ID, &i.StartTime, &i.PlannedDuration, &i.ActualDuration, &i.Category, &i.State)
+	return i, err
+}
