@@ -166,13 +166,16 @@ func (r *dbRepo) Breaks(n int) ([]pomodoro.Interval, error) {
 	return data, nil
 }
 
+// returns a daily summary
 func (r *dbRepo) CategorySummary(day time.Time, filter string) (time.Duration, error) {
 	r.RLock()
 	defer r.RUnlock()
 
 	stmt := `SELECT sum(actual_duration) FROM interval WHERE category LIKE ? AND strftime('%Y-%m-%d', start_time, 'localtime')=strftime('%Y-%m-%d', ?, 'localtime')`
+	
 	var ds sql.NullInt64
 	err := r.db.QueryRow(stmt, filter, day).Scan(&ds)
+	
 	var d time.Duration
 	if ds.Valid {
 		d = time.Duration(ds.Int64)

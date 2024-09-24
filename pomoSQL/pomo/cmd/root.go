@@ -4,6 +4,7 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"time"
@@ -46,10 +47,12 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.Flags().StringP("db", "d", "pomo.db", "Database file")
 	rootCmd.Flags().DurationP("pomo", "p", 25*time.Minute, "Duration for Working")
 	rootCmd.Flags().DurationP("short", "s", 5*time.Minute, "Duration for Short Break")
 	rootCmd.Flags().DurationP("long", "l", 15*time.Minute, "Duration for Long Break")
 
+	viper.BindPFlag("db", rootCmd.Flags().Lookup("db"))
 	viper.BindPFlag("pomo", rootCmd.Flags().Lookup("pomo"))
 	viper.BindPFlag("short", rootCmd.Flags().Lookup("short"))
 	viper.BindPFlag("long", rootCmd.Flags().Lookup("long"))
@@ -60,6 +63,7 @@ func rootAction(out io.Writer, config *pomodoro.IntervalConfig) error {
 	if err != nil {
 		return err
 	}
-
+	
+	fmt.Fprintf(out, "App Running...")
 	return a.Run()
 }
