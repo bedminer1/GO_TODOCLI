@@ -41,7 +41,7 @@ func RangeSummary(start time.Time, n int, config *IntervalConfig) ([]LineSeries,
 	}
 
 	for i := 0; i < n; i++ {
-		day := start.AddDate(0, 0, -i)
+		day := start.AddDate(0, 0, i-n+1)
 		ds, err := DailySummary(day, config)
 		if err != nil {
 			return nil, err
@@ -52,7 +52,7 @@ func RangeSummary(start time.Time, n int, config *IntervalConfig) ([]LineSeries,
 		pomodoroSeries.Values[i] = ds[0].Seconds()
 
 		breakSeries.Labels[i] = label
-		breakSeries.Values[i] = ds[i].Seconds()
+		breakSeries.Values[i] = ds[1].Seconds()
 	}
 
 	return []LineSeries{

@@ -88,8 +88,8 @@ func newBarChart(ctx context.Context, config *pomodoro.IntervalConfig, update <-
 	}()
 
 	// force update at startup
-	if err := updateWidget; err != nil {
-		return nil, err()
+	if err := updateWidget(); err != nil {
+		return nil, err
 	}
 
 	return bc, nil
